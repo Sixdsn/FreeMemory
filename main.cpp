@@ -105,7 +105,8 @@ int main(int argc, char **argv)
 	}
       SixFree::FreeMemory six(swap);
     loop:
-      six.run(mem_perc);
+      if (six.run(mem_perc))
+	exit(EXIT_FAILURE);
       if (loop)
 	{
 	  sleep(time);

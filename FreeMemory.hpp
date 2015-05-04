@@ -22,10 +22,11 @@ namespace SixFree
     {
     }
 
-    void run(size_t);
+    int run(size_t);
 
   protected:
     void show_status(float&, float&);
+    void check_files();
     const std::vector<std::string> getFileTokens(const std::string&) const;
     const std::vector<std::string> get_swaps() const;
     void fillValues();

@@ -11,6 +11,7 @@
 #include <unistd.h>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/log/trivial.hpp>
 
 #include "FreeException.hpp"
@@ -20,11 +21,21 @@
 #define SIXFREE_DROP_CACHE_PAGES "/proc/sys/vm/drop_caches"
 #define SIXFREE_MEMINFO_FILE "/proc/meminfo"
 #define SIXFREE_SWAPS_FILE "/proc/swaps"
+#define SIXFREE_PATH "/proc/"
 
-void SixFree::FreeMemory::run(size_t mem_perc)
+int SixFree::FreeMemory::run(size_t mem_perc)
 {
   float used;
   float total;
+  try
+    {
+      check_files();
+    }
+  catch (const SixFree::FreeException& err)
+    {
+      BOOST_LOG_TRIVIAL(error) << err.what();
+      return (1);
+    }
   show_status(used, total);
   if ((abs(used) * 100) / total <= mem_perc)
     {
@@ -33,6 +44,24 @@ void SixFree::FreeMemory::run(size_t mem_perc)
     }
   else
     BOOST_LOG_TRIVIAL(info) << "RAM OK";
+  return (0);
+}
+
+void SixFree::FreeMemory::check_files()
+{
+  boost::filesystem::path p(SIXFREE_PATH);
+
+  if (!boost::filesystem::exists(p) || !boost::filesystem::is_directory(p))
+    throw(SixFree::FreeException("/proc not mounted"));
+  p = SIXFREE_SWAPS_FILE;
+  if (!boost::filesystem::exists(p) || !boost::filesystem::is_regular_file(p))
+    throw(SixFree::FreeException("Cannot acces" + std::string(SIXFREE_SWAPS_FILE)));
+  p = SIXFREE_DROP_CACHE_PAGES;
+  if (!boost::filesystem::exists(p) || !boost::filesystem::is_regular_file(p))
+    throw(SixFree::FreeException("Cannot acces" + std::string(SIXFREE_DROP_CACHE_PAGES)));
+  p = SIXFREE_MEMINFO_FILE;
+  if (!boost::filesystem::exists(p) || !boost::filesystem::is_regular_file(p))
+    throw(SixFree::FreeException("Cannot acces" + std::string(SIXFREE_MEMINFO_FILE)));
 }
 
 void SixFree::FreeMemory::show_status(float& used, float& total)
