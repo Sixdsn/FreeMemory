@@ -11,6 +11,8 @@
 #include <linux/sysctl.h>
 #include <errno.h>
 
+#include <boost/log/trivial.hpp>
+
 #include "FreeMemory.hpp"
 #include "FreeException.hpp"
 
@@ -19,14 +21,14 @@ void SixFree::FreeMemory::run(size_t mem_perc)
   fillValues();
   float used = _values["MemAvailable:"] - _values["Buffers:"] - _values["Cached:"];
   float total = _values["MemTotal:"];
-  std::cout << "Available: " << _values["MemAvailable:"] << std::endl;
-  std::cout << "Buffers: " << _values["Buffers:"] << std::endl;
-  std::cout << "Cached: " << _values["Cached:"] << std::endl;
-  std::cout << "RAM Status: " << used << "/" << total  << " => " << (abs(used) * 100) / total << "%" << std::endl;
+  BOOST_LOG_TRIVIAL(info) << "Available: " << _values["MemAvailable:"];
+  BOOST_LOG_TRIVIAL(info) << "Buffers: " << _values["Buffers:"];
+  BOOST_LOG_TRIVIAL(info) << "Cached: " << _values["Cached:"];
+  BOOST_LOG_TRIVIAL(info) << "RAM Status: " << used << "/" << total  << " => " << (abs(used) * 100) / total << "%";
   if ((abs(used) * 100) / total <= mem_perc)
     free();
   else
-    std::cout << "RAM OK" << std::endl;
+    BOOST_LOG_TRIVIAL(info) << "RAM OK";
 }
 
 const std::vector<std::string>
@@ -125,7 +127,7 @@ void SixFree::FreeMemory::SixSwapoff(const std::vector<std::string>& swaps) cons
 
   for (it = swaps.begin(); it != ite; ++it)
     {
-      std::cout << "\t" << *it << std::endl;
+      BOOST_LOG_TRIVIAL(info) << "\t" << *it;
       if (swapoff(it->c_str()) == -1)
 	{
 	  perror("swapoff");
@@ -141,7 +143,7 @@ void SixFree::FreeMemory::SixSwapon(const std::vector<std::string>& swaps) const
 
   for (it = swaps.begin(); it != ite; ++it)
     {
-      std::cout << "\t" << *it << std::endl;
+      BOOST_LOG_TRIVIAL(info) << "\t" << *it;
       if (swapon(it->c_str(), SWAP_FLAG_DISCARD) == -1)
 	{
 	  perror("swapon");
@@ -176,50 +178,50 @@ void SixFree::FreeMemory::free() const
     {
       try
 	{
-	  std::cout << "Unmounting Swap" << std::endl;
+	  BOOST_LOG_TRIVIAL(info) << "Unmounting Swap";
 	  SixSwapoff(swaps);
-	  std::cout << "Swap Unmounted" << std::endl;
+	  BOOST_LOG_TRIVIAL(info) << "Swap Unmounted";
 	}
       catch (const SixFree::FreeException& err)
 	{
-	  std::cerr << err.what() << std::endl;
+	  BOOST_LOG_TRIVIAL(error) << err.what();
 	}
     }
   try
     {
-      std::cout << "Clearing Pages" << std::endl;
+      BOOST_LOG_TRIVIAL(info) << "Clearing Pages";
       drop_cache();
     }
     catch (const SixFree::FreeException& err)
     {
-      std::cerr << err.what() << std::endl;
+      BOOST_LOG_TRIVIAL(error) << err.what();
     }
   sync();
   try
     {
       SixPagesFiles();
-      std::cout << "Pages Cleared" << std::endl;
+      BOOST_LOG_TRIVIAL(info) << "Pages Cleared";
     }
     catch (const SixFree::FreeException& err)
     {
-      std::cerr << err.what() << std::endl;
+      BOOST_LOG_TRIVIAL(error) << err.what();
     }
   if (_swap)
     {
       try
 	{
-	  std::cout << "Remounting Swap" << std::endl;
+	  BOOST_LOG_TRIVIAL(info) << "Remounting Swap";
 	  SixSwapon(swaps);
-	  std::cout << "Swap Remounted" << std::endl;
+	  BOOST_LOG_TRIVIAL(info) << "Swap Remounted";
 	}
       catch (const SixFree::FreeException& err)
 	{
-	  std::cerr << err.what() << std::endl;
+	  BOOST_LOG_TRIVIAL(error) << err.what();
 	}
     }
-  std::cout << "Syncing" << std::endl;
+  BOOST_LOG_TRIVIAL(info) << "Syncing";
   sync();
   sleep(2);
   sync();
-  std::cout << "Sync Done" << std::endl;
+  BOOST_LOG_TRIVIAL(info) << "Sync Done";
 }

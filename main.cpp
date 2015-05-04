@@ -4,6 +4,13 @@
 #include <unistd.h>
 #include <signal.h>
 
+#include <boost/log/core.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/sinks/sync_frontend.hpp>
+#include <boost/log/sinks/text_ostream_backend.hpp>
+#include <boost/utility/empty_deleter.hpp>
+
 #include "FreeMemory.hpp"
 #include "FreeException.hpp"
 
@@ -26,6 +33,27 @@ void help()
   std::cout << "-t seconds: check every seconds" << std::endl;
   std::cout << "-m %: free memory when available memory is below %"<< std::endl;
   std::cout << "-h: Prints this menu" << std::endl;
+}
+
+void init_boost_logs(bool silent)
+{
+  typedef boost::log::sinks::synchronous_sink<boost::log::sinks::text_ostream_backend> text_sink;
+  auto sink = boost::make_shared<text_sink>();
+  boost::shared_ptr<std::ostream> stream (&std::clog, boost::empty_deleter());
+  sink->locked_backend()->add_stream (stream);
+  sink->set_formatter (
+		       boost::log::expressions::stream
+		       << "[" << boost::log::expressions::attr<boost::log::trivial::severity_level>("Severity")
+		       << "] " << boost::log::expressions::smessage
+		       );
+  boost::log::core::get()->add_sink (sink);
+  if (silent)
+    {
+      boost::log::core::get()->set_filter
+	(
+	 boost::log::trivial::severity >= boost::log::trivial::fatal
+	 );
+    }
 }
 
 int main(int argc, char **argv)
@@ -71,6 +99,7 @@ int main(int argc, char **argv)
     }
   try
     {
+      init_boost_logs(silent);
       if (bg && daemon(1, !silent))
 	{
 	  throw(SixFree::FreeException("Cannot launch itself as daemon"));
@@ -86,11 +115,11 @@ int main(int argc, char **argv)
     }
   catch (const std::exception& err)
     {
-      std::cerr << err.what() << std::endl;
+      BOOST_LOG_TRIVIAL(error) << err.what();
     }
   catch (...)
     {
-      std::cerr << "Unknown Exception" << std::endl;
+      BOOST_LOG_TRIVIAL(error) << "Unknown Exception";
     }
   return (0);
 }
