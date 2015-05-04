@@ -26,7 +26,7 @@ namespace SixFree
     {
     }
 
-    void run();
+    void run(size_t);
 
   protected:
     const std::vector<std::string> getFileTokens(const std::string&) const;

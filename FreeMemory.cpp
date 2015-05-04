@@ -14,7 +14,7 @@
 #include "FreeMemory.hpp"
 #include "FreeException.hpp"
 
-void SixFree::FreeMemory::run()
+void SixFree::FreeMemory::run(size_t mem_perc)
 {
   fillValues();
   float used = _values["MemAvailable:"] - _values["Buffers:"] - _values["Cached:"];
@@ -23,7 +23,7 @@ void SixFree::FreeMemory::run()
   std::cout << "Buffers: " << _values["Buffers:"] << std::endl;
   std::cout << "Cached: " << _values["Cached:"] << std::endl;
   std::cout << "RAM Status: " << used << "/" << total  << " => " << (abs(used) * 100) / total << "%" << std::endl;
-  if ((abs(used) * 100) / total <= 25)
+  if ((abs(used) * 100) / total <= mem_perc)
     free();
   else
     std::cout << "RAM OK" << std::endl;
