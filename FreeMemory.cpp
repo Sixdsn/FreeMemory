@@ -18,17 +18,27 @@
 
 void SixFree::FreeMemory::run(size_t mem_perc)
 {
+  float used;
+  float total;
+  show_status(used, total);
+  if ((abs(used) * 100) / total <= mem_perc)
+    {
+      free();
+      show_status(used, total);
+    }
+  else
+    BOOST_LOG_TRIVIAL(info) << "RAM OK";
+}
+
+void SixFree::FreeMemory::show_status(float& used, float& total)
+{
   fillValues();
-  float used = _values["MemAvailable:"] - _values["Buffers:"] - _values["Cached:"];
-  float total = _values["MemTotal:"];
+  used = _values["MemAvailable:"] - _values["Buffers:"] - _values["Cached:"];
+  total = _values["MemTotal:"];
   BOOST_LOG_TRIVIAL(info) << "Available: " << _values["MemAvailable:"];
   BOOST_LOG_TRIVIAL(info) << "Buffers: " << _values["Buffers:"];
   BOOST_LOG_TRIVIAL(info) << "Cached: " << _values["Cached:"];
   BOOST_LOG_TRIVIAL(info) << "RAM Status: " << used << "/" << total  << " => " << (abs(used) * 100) / total << "%";
-  if ((abs(used) * 100) / total <= mem_perc)
-    free();
-  else
-    BOOST_LOG_TRIVIAL(info) << "RAM OK";
 }
 
 const std::vector<std::string>
