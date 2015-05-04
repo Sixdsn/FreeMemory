@@ -27,9 +27,15 @@ int SixFree::FreeMemory::run(size_t mem_perc)
 {
   float used;
   float total;
+
   try
     {
       check_files();
+      if (_swap)
+	{
+	  if (_values["MemAvailable:"] - (_values["SwapTotal:"] - _values["SwapFree:"]) < 0)
+	    _swap = false;
+	}
     }
   catch (const SixFree::FreeException& err)
     {
@@ -47,7 +53,7 @@ int SixFree::FreeMemory::run(size_t mem_perc)
   return (0);
 }
 
-void SixFree::FreeMemory::check_files()
+void SixFree::FreeMemory::check_files() const
 {
   boost::filesystem::path p(SIXFREE_PATH);
 

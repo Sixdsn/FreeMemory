@@ -14,6 +14,9 @@ namespace SixFree
 	{"MemAvailable:", 0.0},
 	{"Buffers:", 0.0},
 	{"Cached:", 0.0},
+	//	{"SwapCached:", 0.0},
+	{"SwapTotal:", 0.0},
+	{"SwapFree:", 0.0},
       };
       _swap = swap;
     }
@@ -26,7 +29,7 @@ namespace SixFree
 
   protected:
     void show_status(float&, float&);
-    void check_files();
+    void check_files() const;
     const std::vector<std::string> getFileTokens(const std::string&) const;
     const std::vector<std::string> get_swaps() const;
     void fillValues();
