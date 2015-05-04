@@ -12,7 +12,7 @@ namespace SixFree
   class FreeMemory
   {
   public:
-    FreeMemory()
+    FreeMemory(bool swap=true)
     {
       _values =  {
 	{"MemTotal:", 0.0},
@@ -20,6 +20,7 @@ namespace SixFree
 	{"Buffers:", 0.0},
 	{"Cached:", 0.0},
       };
+      _swap = swap;
     }
 
     virtual ~FreeMemory()
@@ -39,6 +40,7 @@ namespace SixFree
     void free() const;
 
   private:
+    bool _swap;
     std::map<std::string, float> _values;
     const std::vector<std::string> _units = {
       "kB",

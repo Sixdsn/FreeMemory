@@ -172,15 +172,18 @@ void SixFree::FreeMemory::free() const
 {
   const std::vector<std::string> swaps = get_swaps();
 
-  try
+  if (_swap)
     {
-      std::cout << "Unmounting Swap" << std::endl;
-      SixSwapoff(swaps);
-      std::cout << "Swap Unmounted" << std::endl;
-    }
-    catch (const SixFree::FreeException& err)
-    {
-      std::cerr << err.what() << std::endl;
+      try
+	{
+	  std::cout << "Unmounting Swap" << std::endl;
+	  SixSwapoff(swaps);
+	  std::cout << "Swap Unmounted" << std::endl;
+	}
+      catch (const SixFree::FreeException& err)
+	{
+	  std::cerr << err.what() << std::endl;
+	}
     }
   try
     {
@@ -201,15 +204,18 @@ void SixFree::FreeMemory::free() const
     {
       std::cerr << err.what() << std::endl;
     }
-  try
+  if (_swap)
     {
-      std::cout << "Remounting Swap" << std::endl;
-      SixSwapon(swaps);
-      std::cout << "Swap Remounted" << std::endl;
-    }
-    catch (const SixFree::FreeException& err)
-    {
-      std::cerr << err.what() << std::endl;
+      try
+	{
+	  std::cout << "Remounting Swap" << std::endl;
+	  SixSwapon(swaps);
+	  std::cout << "Swap Remounted" << std::endl;
+	}
+      catch (const SixFree::FreeException& err)
+	{
+	  std::cerr << err.what() << std::endl;
+	}
     }
   std::cout << "Syncing" << std::endl;
   sync();

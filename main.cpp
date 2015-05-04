@@ -12,7 +12,7 @@
 
 void usage()
 {
-  std::cerr << "./sixfree [-b |-w |-s |-t s |-m % |-h] "<< std::endl;
+  std::cerr << "./sixfree [-b |-w |-s |-S |-t s |-m % |-h] "<< std::endl;
 }
 
 void help()
@@ -22,6 +22,7 @@ void help()
   std::cout << "-b: run in background" << std::endl;
   std::cout << "-w: run as watchdog" << std::endl;
   std::cout << "-s: Silent mode, no output" << std::endl;
+  std::cout << "-S: Do not swapoff/swapon" << std::endl;
   std::cout << "-t seconds: check every seconds" << std::endl;
   std::cout << "-m %: free memory when available memory is below %"<< std::endl;
   std::cout << "-h: Prints this menu" << std::endl;
@@ -33,10 +34,11 @@ int main(int argc, char **argv)
   bool bg = false;
   bool silent = false;
   bool loop = false;
+  bool swap = true;
   size_t time = DEFAULT_SLEEP;
   size_t mem_perc = DEFAULT_MEM_FREE;
 
-  while ((opt = getopt(argc, argv, "bwsht:m:")) != -1)
+  while ((opt = getopt(argc, argv, "bwshSt:m:")) != -1)
     {
       switch (opt)
 	{
@@ -49,6 +51,9 @@ int main(int argc, char **argv)
 	  break;
 	case 's':
 	  silent = true;
+	  break;
+	case 'S':
+	  swap = false;
 	  break;
 	case 't':
 	  time = std::stoi(optarg);
@@ -70,7 +75,7 @@ int main(int argc, char **argv)
 	{
 	  throw(SixFree::FreeException("Cannot launch itself as daemon"));
 	}
-      SixFree::FreeMemory six;
+      SixFree::FreeMemory six(swap);
     loop:
       six.run(mem_perc);
       if (loop)
