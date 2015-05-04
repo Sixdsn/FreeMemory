@@ -1,11 +1,10 @@
 CXX	 	= 	g++
+CXXFLAGS	=	-W -Wall -Werror -Wextra -std=c++11 -DBOOST_LOG_DYN_LINK 
+LDFLAGS		= 	-lboost_thread -lboost_system -lboost_log_setup -lboost_log -lpthread
+OBJS		=	$(SRC:.cpp=.o)
 SRC		=	main.cpp \
 			FreeMemory.cpp
-CXXFLAGS	=	-W -Wall -Werror -Wextra -std=c++11 -DBOOST_LOG_DYN_LINK 
-OBJS		=	$(SRC:.cpp=.o)
 NAME		=	sixfree
-
-LDFLAGS		= 	-lboost_thread -lboost_system -lboost_log_setup -lboost_log -lpthread
 
 all: $(NAME)
 
