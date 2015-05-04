@@ -2,11 +2,6 @@
 #include <string>
 #include <vector>
 
-#define SIXFREE_DROP_PAGES (3)
-#define SIXFREE_DROP_CACHE_PAGES "/proc/sys/vm/drop_caches"
-#define SIXFREE_MEMINFO_FILE "/proc/meminfo"
-#define SIXFREE_SWAPS_FILE "/proc/swaps"
-
 namespace SixFree
 {
   class FreeMemory

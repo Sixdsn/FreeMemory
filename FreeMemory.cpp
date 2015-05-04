@@ -1,20 +1,25 @@
-#include <map>
-#include <string>
-#include <vector>
+#include <errno.h>
 #include <fstream>
 #include <iostream>
+#include <linux/sysctl.h>
+#include <map>
 #include <regex>
-#include <boost/algorithm/string.hpp>
-#include <unistd.h>
+#include <string>
 #include <sys/swap.h>
 #include <sys/syscall.h>
-#include <linux/sysctl.h>
-#include <errno.h>
+#include <vector>
+#include <unistd.h>
 
+#include <boost/algorithm/string.hpp>
 #include <boost/log/trivial.hpp>
 
-#include "FreeMemory.hpp"
 #include "FreeException.hpp"
+#include "FreeMemory.hpp"
+
+#define SIXFREE_DROP_PAGES (3)
+#define SIXFREE_DROP_CACHE_PAGES "/proc/sys/vm/drop_caches"
+#define SIXFREE_MEMINFO_FILE "/proc/meminfo"
+#define SIXFREE_SWAPS_FILE "/proc/swaps"
 
 void SixFree::FreeMemory::run(size_t mem_perc)
 {
@@ -38,7 +43,8 @@ void SixFree::FreeMemory::show_status(float& used, float& total)
   BOOST_LOG_TRIVIAL(info) << "Available: " << _values["MemAvailable:"];
   BOOST_LOG_TRIVIAL(info) << "Buffers: " << _values["Buffers:"];
   BOOST_LOG_TRIVIAL(info) << "Cached: " << _values["Cached:"];
-  BOOST_LOG_TRIVIAL(info) << "RAM Status: " << used << "/" << total  << " => " << (abs(used) * 100) / total << "%";
+  BOOST_LOG_TRIVIAL(info) << "RAM Status: " << used << "/" << total  << " => "
+			  << (abs(used) * 100) / total << "%";
 }
 
 const std::vector<std::string>
@@ -94,8 +100,10 @@ void SixFree::FreeMemory::fillValues()
       if (_values.find(line_tokens[0]) != _values.end())
 	{
 	  if (line_tokens.size() > 2)
-	    _values[line_tokens[0]] = std::stod(line_tokens[1]) / pow(1000, _units.size() -
-								      (std::find(_units.begin(), _units.end(), line_tokens[2]) - _units.begin()) - 1);
+	    _values[line_tokens[0]] = std::stod(line_tokens[1])
+	      / pow(1000, _units.size() -
+		    (std::find(_units.begin(), _units.end(), line_tokens[2]) -
+		     _units.begin()) - 1);
 	  else
 	    throw(SixFree::FreeException(*it + " format not correct"));
 	}
