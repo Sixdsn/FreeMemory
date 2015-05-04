@@ -130,7 +130,7 @@ void SixFree::FreeMemory::SixSwapoff(const std::vector<std::string>& swaps) cons
       BOOST_LOG_TRIVIAL(info) << "\t" << *it;
       if (swapoff(it->c_str()) == -1)
 	{
-	  perror("swapoff");
+	  BOOST_LOG_TRIVIAL(error) << "swapoff: " + std::string(strerror(errno));
 	  continue;
 	}
     }
@@ -146,7 +146,7 @@ void SixFree::FreeMemory::SixSwapon(const std::vector<std::string>& swaps) const
       BOOST_LOG_TRIVIAL(info) << "\t" << *it;
       if (swapon(it->c_str(), SWAP_FLAG_DISCARD) == -1)
 	{
-	  perror("swapon");
+	  BOOST_LOG_TRIVIAL(error) << "swapon: " + std::string(strerror(errno));
 	  continue;
 	}
     }
