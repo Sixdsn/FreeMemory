@@ -8,6 +8,9 @@
 #include <boost/log/sinks/sync_frontend.hpp>
 #include <boost/log/sinks/text_ostream_backend.hpp>
 #include <boost/log/trivial.hpp>
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/parsers.hpp>
+#include <boost/program_options/variables_map.hpp>
 #include <boost/utility/empty_deleter.hpp>
 
 #include "FreeMemory.hpp"
@@ -16,25 +19,7 @@
 #define DEFAULT_SLEEP (30)
 #define DEFAULT_MEM_FREE (25)
 
-void usage()
-{
-  std::cerr << "./sixfree [-b |-w |-s |-S |-t s |-m % |-h] "<< std::endl;
-}
-
-void help()
-{
-  std::cout << "SixFree Help:"<< std::endl;
-  usage();
-  std::cout << "-b: run in background" << std::endl;
-  std::cout << "-w: run as watchdog" << std::endl;
-  std::cout << "-s: Silent mode, no output" << std::endl;
-  std::cout << "-S: Do not swapoff/swapon" << std::endl;
-  std::cout << "-t seconds: check every seconds" << std::endl;
-  std::cout << "-m %: free memory when available memory is below %"<< std::endl;
-  std::cout << "-h: Prints this menu" << std::endl;
-}
-
-void init_boost_logs(bool silent)
+void init_boost_logs()
 {
   typedef boost::log::sinks::synchronous_sink<boost::log::sinks::text_ostream_backend> text_sink;
   auto sink = boost::make_shared<text_sink>();
@@ -46,18 +31,18 @@ void init_boost_logs(bool silent)
 		       << "] " << boost::log::expressions::smessage
 		       );
   boost::log::core::get()->add_sink (sink);
-  if (silent)
-    {
-      boost::log::core::get()->set_filter
-	(
-	 boost::log::trivial::severity >= boost::log::trivial::fatal
-	 );
-    }
 }
 
-int main(int argc, char **argv)
+void set_silent_logs()
 {
-  int opt;
+  boost::log::core::get()->set_filter
+  (
+   boost::log::trivial::severity >= boost::log::trivial::fatal
+   );
+}
+
+int main(int ac, char **av)
+{
   bool bg = false;
   bool silent = false;
   bool loop = false;
@@ -65,40 +50,57 @@ int main(int argc, char **argv)
   size_t time = DEFAULT_SLEEP;
   size_t mem_perc = DEFAULT_MEM_FREE;
 
-  while ((opt = getopt(argc, argv, "bwshSt:m:")) != -1)
+  try
     {
-      switch (opt)
+      init_boost_logs();
+      boost::program_options::options_description desc("Allowed options");
+      desc.add_options()
+	("help,h", "print this menu")
+	("bg,b", "run in background")
+	("watchdog,w", "run as watchdog")
+	("silent,s", "do not print output")
+	("noswap,S", "do not swapoff/swapon")
+	("time,t", boost::program_options::value<size_t>(&time), "wait N seconds between each run")
+	("memory,m", boost::program_options::value<size_t>(&mem_perc), "free if % memory available is below N")
+	;
+      boost::program_options::variables_map vm;
+      try
 	{
-	case 'b':
-	  bg = true;
-	  break;
-	case 'w':
-	  bg = true;
-	  loop = true;
-	  break;
-	case 's':
-	  silent = true;
-	  break;
-	case 'S':
-	  swap = false;
-	  break;
-	case 't':
-	  time = std::stoi(optarg);
-	  break;
-	case 'm':
-	  mem_perc = std::stoi(optarg);
-	  break;
-	case 'h':
-	  help();
-	  exit(EXIT_SUCCESS);
-	default:
-	  usage();
+	  boost::program_options::store(boost::program_options::parse_command_line(ac, av, desc), vm);
+	  if (vm.count("help"))
+	    {
+	      std::cout << desc << std::endl;
+	      return (EXIT_SUCCESS);
+	    }
+	  boost::program_options::notify(vm);
+	  if (vm.count("bg"))
+	    bg = true;
+	  if (vm.count("watchdog"))
+	    {
+	      loop = true;
+	      bg = true;
+	    }
+	  if (vm.count("silent"))
+	    {
+	      silent = true;
+	      set_silent_logs();
+	    }
+	  if (vm.count("noswap"))
+	    swap = false;
+	}
+      catch (const boost::program_options::error& err)
+	{
+	  BOOST_LOG_TRIVIAL(error) << err.what();
+	  std::cout << desc << std::endl;
 	  exit(EXIT_FAILURE);
 	}
     }
+  catch (const std::exception& err)
+    {
+      BOOST_LOG_TRIVIAL(error) << err.what();
+    }
   try
     {
-      init_boost_logs(silent);
       if (bg && daemon(1, !silent))
 	{
 	  throw(SixFree::FreeException("Cannot launch itself as daemon"));
