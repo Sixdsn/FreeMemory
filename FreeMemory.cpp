@@ -79,7 +79,7 @@ void SixFree::FreeMemory::show_status(float& used, float& total)
   BOOST_LOG_TRIVIAL(info) << "Buffers: " << _values["Buffers:"];
   BOOST_LOG_TRIVIAL(info) << "Cached: " << _values["Cached:"];
   BOOST_LOG_TRIVIAL(info) << "RAM Status: " << used << "/" << total  << " => "
-			  << (abs(used) * 100) / total << "%";
+			  << (std::abs(used) * 100) / total << "%";
 }
 
 const std::vector<std::string>
