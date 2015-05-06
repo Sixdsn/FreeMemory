@@ -31,11 +31,6 @@ int SixFree::FreeMemory::run(size_t mem_perc)
   try
     {
       check_files();
-      if (_swap)
-	{
-	  if (_values["MemAvailable:"] - (_values["SwapTotal:"] - _values["SwapFree:"]) < 0)
-	    _swap = false;
-	}
     }
   catch (const SixFree::FreeException& err)
     {
@@ -43,6 +38,14 @@ int SixFree::FreeMemory::run(size_t mem_perc)
       return (1);
     }
   show_status(used, total);
+  if (_swap)
+    {
+      if (_values["MemAvailable:"] - (_values["SwapTotal:"] - _values["SwapFree:"]) <= 0)
+	{
+	  BOOST_LOG_TRIVIAL(warning) << "Not enough Memory Available to Swapoff";
+	  _swap = false;
+	}
+    }
   if ((abs(used) * 100) / total <= mem_perc)
     {
       free();
