@@ -46,7 +46,7 @@ int SixFree::FreeMemory::run(size_t mem_perc)
 	  _swap = false;
 	}
     }
-  if ((abs(used) * 100) / total <= mem_perc)
+  if ((std::abs(used) * 100) / total <= mem_perc)
     {
       free();
       show_status(used, total);
