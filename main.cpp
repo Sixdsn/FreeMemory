@@ -73,26 +73,34 @@ int main(int ac, char **av)
 	      return (EXIT_SUCCESS);
 	    }
 	  boost::program_options::notify(vm);
-	  if (vm.count("bg"))
-	    bg = true;
-	  if (vm.count("watchdog"))
-	    {
-	      loop = true;
-	      bg = true;
-	    }
 	  if (vm.count("silent"))
 	    {
 	      silent = true;
 	      set_silent_logs();
 	    }
-	  if (vm.count("noswap"))
-	    swap = false;
+	  if (vm.count("watchdog"))
+	    {
+	      loop = true;
+	      bg = true;
+	      BOOST_LOG_TRIVIAL(trace) << "Watchdog Mode every " << time << " minutes";
+	    }
+	  else if (vm.count("bg"))
+	    {
+	      bg = true;
+	      BOOST_LOG_TRIVIAL(trace) << "Running in Background";
+	    }
 	  if (vm.count("time"))
 	    {
 	      time = vm["time"].as<size_t>();
 	      if (!vm.count("watchdog"))
 		BOOST_LOG_TRIVIAL(warning) << "Option --time only used with --watchdog";
 	    }
+	  if (vm.count("noswap"))
+	    {
+	      swap = false;
+	      BOOST_LOG_TRIVIAL(trace) << "NoSwap Management";
+	    }
+	  BOOST_LOG_TRIVIAL(trace) << "Free Memory below " << mem_perc << "%";
 	}
       catch (const boost::program_options::error& err)
 	{
