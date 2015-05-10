@@ -60,7 +60,7 @@ int main(int ac, char **av)
 	("watchdog,w", "run as watchdog")
 	("silent,s", "do not print output")
 	("noswap,S", "do not swapoff/swapon")
-	("time,t", boost::program_options::value<size_t>(&time), "wait N seconds between each run")
+	("time,t", boost::program_options::value<size_t>(), "wait N seconds between each run")
 	("memory,m", boost::program_options::value<size_t>(&mem_perc), "free if % memory available is below N")
 	;
       boost::program_options::variables_map vm;
@@ -87,6 +87,12 @@ int main(int ac, char **av)
 	    }
 	  if (vm.count("noswap"))
 	    swap = false;
+	  if (vm.count("time"))
+	    {
+	      time = vm["time"].as<size_t>();
+	      if (!vm.count("watchdog"))
+		BOOST_LOG_TRIVIAL(warning) << "Option --time only used with --watchdog";
+	    }
 	}
       catch (const boost::program_options::error& err)
 	{
