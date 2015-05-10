@@ -60,7 +60,7 @@ int main(int ac, char **av)
 	("watchdog,w", "run as watchdog")
 	("silent,s", "do not print output")
 	("noswap,S", "do not swapoff/swapon")
-	("time,t", boost::program_options::value<size_t>(), "wait N seconds between each run")
+	("time,t", boost::program_options::value<size_t>(), "wait N minutes between each run")
 	("memory,m", boost::program_options::value<size_t>(&mem_perc), "free if % memory available is below N")
 	;
       boost::program_options::variables_map vm;
@@ -117,7 +117,7 @@ int main(int ac, char **av)
 	exit(EXIT_FAILURE);
       if (loop)
 	{
-	  sleep(time);
+	  sleep(time * 60);
 	  goto loop;
 	}
     }
