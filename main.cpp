@@ -106,12 +106,13 @@ int main(int ac, char **av)
 	{
 	  BOOST_LOG_TRIVIAL(error) << err.what();
 	  std::cout << desc << std::endl;
-	  exit(EXIT_FAILURE);
+	  return (EXIT_FAILURE);
 	}
     }
   catch (const std::exception& err)
     {
       BOOST_LOG_TRIVIAL(error) << err.what();
+      return (EXIT_FAILURE);
     }
   try
     {
@@ -122,7 +123,7 @@ int main(int ac, char **av)
       SixFree::FreeMemory six(swap);
     loop:
       if (six.run(mem_perc))
-	exit(EXIT_FAILURE);
+	return (EXIT_FAILURE);
       if (loop)
 	{
 	  sleep(time * 60);
@@ -132,10 +133,13 @@ int main(int ac, char **av)
   catch (const std::exception& err)
     {
       BOOST_LOG_TRIVIAL(error) << err.what();
+      return (EXIT_FAILURE);
     }
   catch (...)
     {
       BOOST_LOG_TRIVIAL(error) << "Unknown Exception";
+      BOOST_LOG_TRIVIAL(error) << "Aborting";
+      return (EXIT_FAILURE);
     }
-  return (0);
+  return (EXIT_SUCCESS);
 }
