@@ -23,22 +23,22 @@ void init_boost_logs()
 {
   typedef boost::log::sinks::synchronous_sink<boost::log::sinks::text_ostream_backend> text_sink;
   auto sink = boost::make_shared<text_sink>();
-  boost::shared_ptr<std::ostream> stream (&std::clog, boost::empty_deleter());
+  boost::shared_ptr<std::ostream> stream(&std::clog, boost::empty_deleter());
   sink->locked_backend()->add_stream (stream);
-  sink->set_formatter (
-		       boost::log::expressions::stream
-		       << "[" << boost::log::expressions::attr<boost::log::trivial::severity_level>("Severity")
-		       << "] " << boost::log::expressions::smessage
-		       );
-  boost::log::core::get()->add_sink (sink);
+  sink->set_formatter(
+		      boost::log::expressions::stream
+		      << "[" << boost::log::expressions::attr<boost::log::trivial::severity_level>("Severity")
+		      << "] " << boost::log::expressions::smessage
+		      );
+  boost::log::core::get()->add_sink(sink);
 }
 
 void set_silent_logs()
 {
   boost::log::core::get()->set_filter
-  (
-   boost::log::trivial::severity >= boost::log::trivial::fatal
-   );
+    (
+     boost::log::trivial::severity >= boost::log::trivial::fatal
+     );
 }
 
 int main(int ac, char **av)
