@@ -11,12 +11,32 @@ libboost-system-dev
 
 libboost-program-options-dev
 
+cmake
+
 This program is used to free unused memory such a cached pages and remount empty swap if possible.
 It can run silently as a watchdog in background and check every N minutes.
 
+
+BUILD:
+```
+$> git clone git@github.com:Sixdsn/FreeMemory.git
+$> cd FreeMemory
+$> cmake . -G "Unix Makefiles"
+$> make
+$> sudo ./sixfree
+```
+
+
+TIP SETUID: (run it without sudo and not beeing root)
+```
+$> sudo chown root:root sixfree
+$> sudo chmod 4775 sixfree
+```
+
+
 USAGE:
 
-$>sixfree -h
+$> sixfree -h
 
 Allowed options:
 
