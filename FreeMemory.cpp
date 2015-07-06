@@ -9,6 +9,7 @@
 #include <sys/syscall.h>
 #include <vector>
 #include <unistd.h>
+#include <iomanip>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
@@ -78,10 +79,10 @@ void SixFree::FreeMemory::show_status(float& used, float& total)
   fillValues();
   used = std::abs(_values["MemAvailable:"] - _values["Buffers:"] - _values["Cached:"]);
   total = _values["MemTotal:"];
-  BOOST_LOG_TRIVIAL(info) << "Available: " << _values["MemAvailable:"];
-  BOOST_LOG_TRIVIAL(info) << "Buffers: " << _values["Buffers:"];
-  BOOST_LOG_TRIVIAL(info) << "Cached: " << _values["Cached:"];
-  BOOST_LOG_TRIVIAL(info) << "RAM Status: " << used << "/" << total  << " => "
+  BOOST_LOG_TRIVIAL(info) << "Available: " << std::setprecision(2) <<_values["MemAvailable:"];
+  BOOST_LOG_TRIVIAL(info) << "Buffers: " << std::setprecision(2) << _values["Buffers:"];
+  BOOST_LOG_TRIVIAL(info) << "Cached: " << std::setprecision(2) << _values["Cached:"];
+  BOOST_LOG_TRIVIAL(info) << "RAM Status: " << std::setprecision(2) << used << "/" << total  << " => "
 			  << (used * 100) / total << "%";
 }
 
