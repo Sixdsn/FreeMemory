@@ -10,6 +10,7 @@
 #include <vector>
 #include <unistd.h>
 #include <iomanip>
+#include <algorithm>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
@@ -41,7 +42,9 @@ int SixFree::FreeMemory::run(size_t mem_perc)
   show_status(used, total);
   if (_swap)
     {
-      if (_values["MemAvailable:"] - (_values["SwapTotal:"] - _values["SwapFree:"]) <= 0)
+      if (std::get<0>(_values["MemAvailable:"]) -
+	  (std::get<0>(_values["SwapTotal:"]) -
+	   std::get<0>(_values["SwapFree:"])) <= 0)
 	{
 	  BOOST_LOG_TRIVIAL(warning) << "Not enough Memory Available to Swapoff";
 	  _swap = false;
@@ -77,11 +80,16 @@ void SixFree::FreeMemory::check_files() const
 void SixFree::FreeMemory::show_status(float& used, float& total)
 {
   fillValues();
-  used = std::abs(_values["MemAvailable:"] - _values["Buffers:"] - _values["Cached:"]);
-  total = _values["MemTotal:"];
-  BOOST_LOG_TRIVIAL(info) << "Available: " << std::setprecision(2) <<_values["MemAvailable:"];
-  BOOST_LOG_TRIVIAL(info) << "Buffers: " << std::setprecision(2) << _values["Buffers:"];
-  BOOST_LOG_TRIVIAL(info) << "Cached: " << std::setprecision(2) << _values["Cached:"];
+  used = std::abs(std::get<0>(_values["MemAvailable:"]) -
+		  std::get<0>(_values["Buffers:"]) -
+		  std::get<0>(_values["Cached:"]));
+  total = std::get<0>(_values["MemTotal:"]);
+  BOOST_LOG_TRIVIAL(info) << "Available: " << std::setprecision(2) <<
+    std::get<0>(_values["MemAvailable:"]) << *std::get<1>(_values["MemAvailable:"]);
+  BOOST_LOG_TRIVIAL(info) << "Buffers: " << std::setprecision(2) <<
+    std::get<0>(_values["Buffers:"]) << *std::get<1>(_values["Buffers:"]);
+  BOOST_LOG_TRIVIAL(info) << "Cached: " << std::setprecision(2) <<
+    std::get<0>(_values["Cached:"]) << *std::get<1>(_values["Cached:"]) ;
   BOOST_LOG_TRIVIAL(info) << "RAM Status: " << std::setprecision(2) << used << "/" << total  << " => "
 			  << (used * 100) / total << "%";
 }
@@ -139,10 +147,12 @@ void SixFree::FreeMemory::fillValues()
       if (_values.find(line_tokens[0]) != _values.end())
 	{
 	  if (line_tokens.size() > 2)
-	    _values[line_tokens[0]] = std::stod(line_tokens[1])
-	      / pow(1000, _units.size() -
-		    (std::find(_units.begin(), _units.end(), line_tokens[2]) -
-		     _units.begin()) - 1);
+	    {
+	      int perc = _units.size() - (std::find(_units.begin(), _units.end(),
+						    line_tokens[2]) - _units.begin()) - 1;
+	      _values[line_tokens[0]] =std::make_tuple((std::stod(line_tokens[1]) /
+							pow(1000, perc)), _units.begin() + perc);
+	    }
 	  else
 	    throw(SixFree::FreeException(*it + " format not correct"));
 	}
