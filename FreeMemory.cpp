@@ -150,13 +150,15 @@ void SixFree::FreeMemory::fillValues()
 	    {
 	      int perc = _units.size() - (std::find(_units.begin(), _units.end(),
 						    line_tokens[2]) - _units.begin()) - 1;
-	      _values[line_tokens[0]] =std::make_tuple((std::stod(line_tokens[1]) /
+	      _values[line_tokens[0]] =std::make_pair((std::stod(line_tokens[1]) /
 							pow(1000, perc)), _units.begin() + perc);
 	    }
 	  else
 	    throw(SixFree::FreeException(*it + " format not correct"));
 	}
     }
+  if (_swap and _values["SwapFree:"].first == _values["SwapTotal:"].first)
+    _swap = false;
 }
 
 void SixFree::FreeMemory::drop_cache() const

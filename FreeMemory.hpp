@@ -11,12 +11,12 @@ namespace SixFree
     FreeMemory(bool swap=true)
     {
       _values =  {
-	{"MemTotal:", std::make_tuple(0.0, _units.begin())},
-	{"MemAvailable:", std::make_tuple(0.0, _units.begin())},
-	{"Buffers:", std::make_tuple(0.0, _units.begin())},
-	{"Cached:", std::make_tuple(0.0, _units.begin())},
-	{"SwapTotal:", std::make_tuple(0.0, _units.begin())},
-	{"SwapFree:", std::make_tuple(0.0, _units.begin())},
+	{"MemTotal:", std::make_pair(0.0, _units.begin())},
+	{"MemAvailable:", std::make_pair(0.0, _units.begin())},
+	{"Buffers:", std::make_pair(0.0, _units.begin())},
+	{"Cached:", std::make_pair(0.0, _units.begin())},
+	{"SwapTotal:", std::make_pair(0.0, _units.begin())},
+	{"SwapFree:", std::make_pair(0.0, _units.begin())},
       };
       _swap = swap;
     }
@@ -41,7 +41,7 @@ namespace SixFree
 
   private:
     bool _swap;
-    std::map<std::string, std::tuple<float, std::vector<std::string>::const_iterator > > _values;
+    std::map<std::string, std::pair<float, std::vector<std::string>::const_iterator > > _values;
     const std::vector<std::string> _units = {
       "kB",
       "mB",
