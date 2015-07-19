@@ -2,15 +2,13 @@
 #include <fstream>
 #include <iostream>
 #include <linux/sysctl.h>
-#include <map>
 #include <regex>
-#include <string>
 #include <sys/swap.h>
 #include <sys/syscall.h>
-#include <vector>
 #include <unistd.h>
 #include <iomanip>
 #include <algorithm>
+#include <utility>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
@@ -24,6 +22,27 @@
 #define SIXFREE_MEMINFO_FILE "/proc/meminfo"
 #define SIXFREE_SWAPS_FILE "/proc/swaps"
 #define SIXFREE_PATH "/proc/"
+
+std::pair<float, int> SixFree::FreeMemory::getHumanValue(float value)
+{
+  int cpt, nb;
+  float val;
+
+  cpt = 0;
+  nb = 0;
+  val = value;
+  while (val > 1)
+    {
+      val /= 10;
+      ++nb;
+      if (nb %3 == 0)
+	{
+	  ++cpt;
+	  value /= 1000;
+	}
+    }
+  return (std::make_pair(value, cpt - 1));
+}
 
 int SixFree::FreeMemory::run(size_t mem_perc)
 {
@@ -42,9 +61,9 @@ int SixFree::FreeMemory::run(size_t mem_perc)
   show_status(used, total);
   if (_swap)
     {
-      if (std::get<0>(_values["MemAvailable:"]) -
-	  (std::get<0>(_values["SwapTotal:"]) -
-	   std::get<0>(_values["SwapFree:"])) <= 0)
+      if (_values["MemAvailable:"] -
+	  (_values["SwapTotal:"] -
+	   _values["SwapFree:"]) <= 0)
 	{
 	  BOOST_LOG_TRIVIAL(warning) << "Not enough Memory Available to Swapoff";
 	  _swap = false;
@@ -77,21 +96,30 @@ void SixFree::FreeMemory::check_files() const
     throw(SixFree::FreeException("Cannot acces" + p.native()));
 }
 
+void SixFree::FreeMemory::printMemory(const std::string& mess, const std::string& val)
+{
+  std::pair<float, int> value = getHumanValue(_values[val]);
+
+  BOOST_LOG_TRIVIAL(info) << mess << std::setprecision(2)
+			  << value.first << *(_units.begin() + value.second);
+}
+
 void SixFree::FreeMemory::show_status(float& used, float& total)
 {
   fillValues();
-  used = std::abs(std::get<0>(_values["MemAvailable:"]) -
-		  std::get<0>(_values["Buffers:"]) -
-		  std::get<0>(_values["Cached:"]));
-  total = std::get<0>(_values["MemTotal:"]);
-  BOOST_LOG_TRIVIAL(info) << "Available: " << std::setprecision(2) <<
-    std::get<0>(_values["MemAvailable:"]) << *std::get<1>(_values["MemAvailable:"]);
-  BOOST_LOG_TRIVIAL(info) << "Buffers: " << std::setprecision(2) <<
-    std::get<0>(_values["Buffers:"]) << *std::get<1>(_values["Buffers:"]);
-  BOOST_LOG_TRIVIAL(info) << "Cached: " << std::setprecision(2) <<
-    std::get<0>(_values["Cached:"]) << *std::get<1>(_values["Cached:"]) ;
-  BOOST_LOG_TRIVIAL(info) << "RAM Status: " << std::setprecision(2) << used << "/" << total  << " => "
-			  << (used * 100) / total << "%";
+  used = std::abs(_values["MemAvailable:"] -
+		  _values["Buffers:"] -
+		  _values["Cached:"]);
+  total = _values["MemTotal:"];
+  printMemory("Available: ", "MemAvailable:");
+  printMemory("Buffers: ", "Buffers:");
+  printMemory("Cached: ", "Cached:");
+  std::pair<float, int> used_value = getHumanValue(used);
+  std::pair<float, int> total_value = getHumanValue(total);
+  BOOST_LOG_TRIVIAL(info) << "RAM Status: " << std::setprecision(2)
+			  << used_value.first << *(_units.begin() + used_value.second)
+			  << "/" << total_value.first << *(_units.begin() + total_value.second)
+			  << " => " << (used * 100) / total << "%";
 }
 
 const std::vector<std::string>
@@ -148,16 +176,14 @@ void SixFree::FreeMemory::fillValues()
 	{
 	  if (line_tokens.size() > 2)
 	    {
-	      int perc = _units.size() - (std::find(_units.begin(), _units.end(),
-						    line_tokens[2]) - _units.begin()) - 1;
-	      _values[line_tokens[0]] =std::make_pair((std::stod(line_tokens[1]) /
-							pow(1000, perc)), _units.begin() + perc);
+	      int perc = 1 + std::find(_units.begin(), _units.end(), line_tokens[2]) - _units.begin();
+	      _values[line_tokens[0]] = std::stod(line_tokens[1]) * pow(1000, perc);
 	    }
 	  else
 	    throw(SixFree::FreeException(*it + " format not correct"));
 	}
     }
-  if (_swap and _values["SwapFree:"].first == _values["SwapTotal:"].first)
+  if (_swap and _values["SwapFree:"] == _values["SwapTotal:"])
     _swap = false;
 }
 

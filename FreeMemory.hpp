@@ -1,7 +1,6 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <utility>
 
 namespace SixFree
 {
@@ -11,12 +10,12 @@ namespace SixFree
     FreeMemory(bool swap=true)
     {
       _values =  {
-	{"MemTotal:", std::make_pair(0.0, _units.begin())},
-	{"MemAvailable:", std::make_pair(0.0, _units.begin())},
-	{"Buffers:", std::make_pair(0.0, _units.begin())},
-	{"Cached:", std::make_pair(0.0, _units.begin())},
-	{"SwapTotal:", std::make_pair(0.0, _units.begin())},
-	{"SwapFree:", std::make_pair(0.0, _units.begin())},
+	{"MemTotal:", 0.0},
+	{"MemAvailable:", 0.0},
+	{"Buffers:", 0.0},
+	{"Cached:", 0.0},
+	{"SwapTotal:", 0.0},
+	{"SwapFree:", 0.0},
       };
       _swap = swap;
     }
@@ -38,14 +37,16 @@ namespace SixFree
     void SixSwapon(const std::vector<std::string>&) const;
     void SixPagesFiles() const;
     void free() const;
-
+    void printMemory(const std::string&, const std::string&);
+    std::pair<float, int> getHumanValue(float);
   private:
     bool _swap;
-    std::map<std::string, std::pair<float, std::vector<std::string>::const_iterator > > _values;
+    std::map<std::string, float> _values;
     const std::vector<std::string> _units = {
       "kB",
       "mB",
-      "gB"
+      "gB",
+      "tB",
     };
   };
 }
