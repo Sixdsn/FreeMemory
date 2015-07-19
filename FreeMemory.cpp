@@ -65,16 +65,16 @@ void SixFree::FreeMemory::check_files() const
   boost::filesystem::path p(SIXFREE_PATH);
 
   if (!boost::filesystem::exists(p) || !boost::filesystem::is_directory(p))
-    throw(SixFree::FreeException("/proc not mounted"));
+    throw(SixFree::FreeException(p.native() + " not mounted"));
   p = SIXFREE_SWAPS_FILE;
   if (!boost::filesystem::exists(p) || !boost::filesystem::is_regular_file(p))
-    throw(SixFree::FreeException("Cannot acces" + std::string(SIXFREE_SWAPS_FILE)));
+    throw(SixFree::FreeException("Cannot acces" + p.native()));
   p = SIXFREE_DROP_CACHE_PAGES;
   if (!boost::filesystem::exists(p) || !boost::filesystem::is_regular_file(p))
-    throw(SixFree::FreeException("Cannot acces" + std::string(SIXFREE_DROP_CACHE_PAGES)));
+    throw(SixFree::FreeException("Cannot acces" + p.native()));
   p = SIXFREE_MEMINFO_FILE;
   if (!boost::filesystem::exists(p) || !boost::filesystem::is_regular_file(p))
-    throw(SixFree::FreeException("Cannot acces" + std::string(SIXFREE_MEMINFO_FILE)));
+    throw(SixFree::FreeException("Cannot acces" + p.native()));
 }
 
 void SixFree::FreeMemory::show_status(float& used, float& total)
