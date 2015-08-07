@@ -261,8 +261,8 @@ void SixFree::FreeMemory::free()
 
   try
     {
+      BOOST_LOG_TRIVIAL(info) << "Clearing Pages";
       SixPagesFiles();
-      BOOST_LOG_TRIVIAL(info) << "Pages Cleared";
     }
     catch (const SixFree::FreeException& err)
     {
@@ -270,8 +270,8 @@ void SixFree::FreeMemory::free()
     }
   try
     {
-      BOOST_LOG_TRIVIAL(info) << "Clearing Pages";
       drop_cache();
+      BOOST_LOG_TRIVIAL(info) << "Pages Cleared";
     }
     catch (const SixFree::FreeException& err)
     {
