@@ -36,7 +36,7 @@ namespace SixFree
     void SixSwapoff(const std::vector<std::string>&) const;
     void SixSwapon(const std::vector<std::string>&) const;
     void SixPagesFiles() const;
-    void free() const;
+    void free();
     void printMemory(const std::string&, const std::string&);
     std::pair<float, int> getHumanValue(float);
   private:

@@ -59,16 +59,6 @@ int SixFree::FreeMemory::run(size_t mem_perc)
       return (1);
     }
   show_status(used, total);
-  if (_swap)
-    {
-      if (_values["MemAvailable:"] -
-	  (_values["SwapTotal:"] -
-	   _values["SwapFree:"]) <= 0)
-	{
-	  BOOST_LOG_TRIVIAL(warning) << "Not enough Memory Available to Swapoff";
-	  _swap = false;
-	}
-    }
   if ((used * 100) / total <= mem_perc)
     {
       free();
@@ -265,10 +255,36 @@ void SixFree::FreeMemory::SixPagesFiles() const
 				 " to " + std::to_string(SIXFREE_DROP_PAGES)));
 }
 
-void SixFree::FreeMemory::free() const
+void SixFree::FreeMemory::free()
 {
   const std::vector<std::string> swaps = get_swaps();
 
+  try
+    {
+      SixPagesFiles();
+      BOOST_LOG_TRIVIAL(info) << "Pages Cleared";
+    }
+    catch (const SixFree::FreeException& err)
+    {
+      BOOST_LOG_TRIVIAL(error) << err.what();
+    }
+  try
+    {
+      BOOST_LOG_TRIVIAL(info) << "Clearing Pages";
+      drop_cache();
+    }
+    catch (const SixFree::FreeException& err)
+    {
+      BOOST_LOG_TRIVIAL(error) << err.what();
+    }
+  fillValues();
+  if (_swap and (_values["MemAvailable:"] -
+		 (_values["SwapTotal:"] -
+		  _values["SwapFree:"]) <= 0))
+    {
+      BOOST_LOG_TRIVIAL(warning) << "Not enough Memory Available to Swapoff";
+      _swap = false;
+    }
   if (_swap)
     {
       try
@@ -281,28 +297,7 @@ void SixFree::FreeMemory::free() const
 	{
 	  BOOST_LOG_TRIVIAL(error) << err.what();
 	}
-    }
-  try
-    {
-      BOOST_LOG_TRIVIAL(info) << "Clearing Pages";
-      drop_cache();
-    }
-    catch (const SixFree::FreeException& err)
-    {
-      BOOST_LOG_TRIVIAL(error) << err.what();
-    }
-  sync();
-  try
-    {
-      SixPagesFiles();
-      BOOST_LOG_TRIVIAL(info) << "Pages Cleared";
-    }
-    catch (const SixFree::FreeException& err)
-    {
-      BOOST_LOG_TRIVIAL(error) << err.what();
-    }
-  if (_swap)
-    {
+      sync();
       try
 	{
 	  BOOST_LOG_TRIVIAL(info) << "Remounting Swap";
