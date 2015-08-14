@@ -1,7 +1,5 @@
 #include <exception>
 #include <iostream>
-#include <unistd.h>
-#include <signal.h>
 
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>

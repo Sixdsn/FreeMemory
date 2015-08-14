@@ -15,9 +15,7 @@ file(GLOB FREEMEMORY_HEADERS *.hpp)
 
 source_group(Source\ Files FILES ${FREEMEMORY_HEADERS})
 
-#include_directories(${CMAKE_INCLUDE_PATH} src)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall -Werror -Wextra -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall -Werror -Wextra -ansi -pedantic -std=c++11")
 
 add_executable(
 	${PROJECT_NAME}
