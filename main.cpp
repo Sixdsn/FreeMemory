@@ -11,11 +11,13 @@
 #include <boost/program_options/variables_map.hpp>
 #include <boost/utility/empty_deleter.hpp>
 
-#include "FreeMemory.hpp"
+#include "FreeMemoryUbuntu.hpp"
 #include "FreeException.hpp"
 
 #define DEFAULT_SLEEP (30)
 #define DEFAULT_MEM_FREE (25)
+
+static SixFree::AFreeMemory *six;
 
 void init_boost_logs()
 {
@@ -39,6 +41,11 @@ void set_silent_logs()
      );
 }
 
+void delSix()
+{
+  delete (six);
+}
+
 int main(int ac, char **av)
 {
   bool bg = false;
@@ -51,6 +58,11 @@ int main(int ac, char **av)
   try
     {
       init_boost_logs();
+      if (atexit(delSix))
+	{
+	  BOOST_LOG_TRIVIAL(error) << "Cannot set exit function";
+	  return (EXIT_FAILURE);
+	}
       boost::program_options::options_description desc("Allowed options");
       desc.add_options()
 	("help,h", "print this menu")
@@ -118,9 +130,9 @@ int main(int ac, char **av)
 	{
 	  throw(SixFree::FreeException("Cannot launch itself as daemon"));
 	}
-      SixFree::FreeMemory six(swap);
+      six = new SixFree::FreeMemoryUbuntu(swap);
     loop:
-      if (six.run(mem_perc))
+      if (six->run(mem_perc))
 	return (EXIT_FAILURE);
       if (loop)
 	{

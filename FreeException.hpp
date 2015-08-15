@@ -1,3 +1,6 @@
+#ifndef __SIX_FREEEXCEPTION__
+#define __SIX_FREEEXCEPTION__
+
 #include <stdexcept>
 #include <string>
 
@@ -10,3 +13,5 @@ namespace SixFree
       std::runtime_error(what_arg) {}
   };
 }
+
+#endif
