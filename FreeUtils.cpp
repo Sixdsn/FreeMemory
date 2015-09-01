@@ -24,6 +24,8 @@ std::pair<float, int> SixFree::getHumanValue(float value)
   int cpt, nb;
   float val;
 
+  if (value <= 0)
+    return (std::make_pair(value, 0));
   cpt = 0;
   nb = 0;
   val = value;
